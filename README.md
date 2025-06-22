@@ -18,6 +18,10 @@ CureBot is a smart AI-based Streamlit assistant that suggests doctors based on u
 
 ---
 
+## 🎥 Demo
+
+![CureBot Demo](media/demo.gif)  <!-- if converted to GIF -->
+
 ## 🚀 Quickstart (Local)
 
 ### 1. Clone the repo
