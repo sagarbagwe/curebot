@@ -42,8 +42,8 @@ pip install -r requirements.txt
 Create a `.env` file:
 
 ```env
-PROJECT_ID=your-gcp-project-id
-LOCATION=us-central1
+GCP_PROJECT_ID=your-gcp-project-id
+GCP_LOCATION=us-central1
 MODEL_NAME=gemini-1.5-pro
 ```
 
