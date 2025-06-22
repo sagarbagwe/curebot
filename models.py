@@ -19,11 +19,35 @@ class Prescription(Base):
     id = Column(Integer, primary_key=True)
     filename = Column(String)
     content = Column(Text)
+def get_doctors_by_specialization(specialty: str):
+    session = SessionLocal()
+    doctors = (
+        session.query(Doctor)
+        .filter(Doctor.specialization.ilike(f"%{specialty}%"))
+        .all()
+    )
+    session.close()
+    return doctors
+
 
 class Insurance(Base):
     __tablename__ = "insurance"
     id = Column(Integer, primary_key=True)
     provider = Column(String)
-    covered_specializations = Column(String)  # comma-separated
+    covered_specializations = Column(String) 
+
+
+def check_insurance_coverage(provider: str, specialization: str):
+    session = SessionLocal()
+    result = session.query(Insurance).filter(
+        Insurance.provider.ilike(f"%{provider}%")
+    ).all()
+    session.close()
+
+    for entry in result:
+        covered = [s.strip().lower() for s in entry.covered_specializations.split(",")]
+        if specialization.lower() in covered:
+            return True
+    return False
 
 Base.metadata.create_all(bind=engine)
