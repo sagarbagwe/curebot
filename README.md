@@ -1,8 +1,4 @@
-Here's your updated `README.md`, now **including the Google OAuth authentication setup and troubleshooting**, especially for the `403: org_internal` error:
 
----
-
-````markdown
 # 🩺 CureBot - AI Health Assistant
 
 CureBot is a smart AI-based Streamlit assistant that suggests doctors based on user symptoms using Gemini (Vertex AI) and shows their availability.
@@ -180,9 +176,5 @@ MIT
 
 Sagar Bagwe – [sagarbagwe@google.com](mailto:sagarbagwe@google.com)
 
-```
 
----
 
-Let me know if you'd also like to include **screenshots**, or **API usage instructions** (like for Gemini), or a **contributors guide**.
-```
