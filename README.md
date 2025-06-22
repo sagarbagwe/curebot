@@ -1,4 +1,8 @@
+Here's your updated `README.md`, now **including the Google OAuth authentication setup and troubleshooting**, especially for the `403: org_internal` error:
 
+---
+
+````markdown
 # 🩺 CureBot - AI Health Assistant
 
 CureBot is a smart AI-based Streamlit assistant that suggests doctors based on user symptoms using Gemini (Vertex AI) and shows their availability.
@@ -7,11 +11,14 @@ CureBot is a smart AI-based Streamlit assistant that suggests doctors based on u
 
 ## 📦 Features
 
+- 🔐 Google OAuth login
 - Input your symptoms and get the right specialization
 - Lists available doctors from a local SQLite DB
 - Provides a next appointment slot
+- Upload and summarize prescriptions in multiple languages
+- Upload insurance policy and get AI-generated summaries
 - Uses Vertex AI's Gemini 1.5 model
-- Simple UI using Streamlit
+- Simple and elegant UI using Streamlit
 
 ---
 
@@ -45,6 +52,42 @@ Create a `.env` file:
 GCP_PROJECT_ID=your-gcp-project-id
 GCP_LOCATION=us-central1
 MODEL_NAME=gemini-1.5-pro
+
+GOOGLE_CLIENT_ID=your-google-oauth-client-id
+GOOGLE_CLIENT_SECRET=your-google-oauth-client-secret
+```
+
+---
+
+## 🔐 Google OAuth Setup
+
+### 1. Create OAuth Credentials
+
+* Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+* Create **OAuth 2.0 Client ID**
+
+  * App type: Web application
+  * Authorized redirect URI: `http://localhost:8501`
+
+### 2. Make the App Public
+
+If you're getting this error:
+
+```
+Error 403: org_internal — This app is restricted to users within its organization.
+```
+
+Fix it by:
+
+* Going to **OAuth consent screen**
+* Change **User Type** from `Internal` to `External`
+* Add your Gmail under **Test Users**
+
+### 3. Example `.env` for OAuth
+
+```env
+GOOGLE_CLIENT_ID=1234567890-abcxyz.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your_secret_key
 ```
 
 ---
@@ -136,3 +179,10 @@ MIT
 ## 🙋‍♂️ Maintainer
 
 Sagar Bagwe – [sagarbagwe@google.com](mailto:sagarbagwe@google.com)
+
+```
+
+---
+
+Let me know if you'd also like to include **screenshots**, or **API usage instructions** (like for Gemini), or a **contributors guide**.
+```

@@ -3,15 +3,31 @@ from core import get_doctor_specialization
 from calendar_api import get_next_available_slots
 from models import get_doctors_by_specialization, SessionLocal, Prescription
 from vertex_agent import ask_llm
+from auth import login, handle_callback
+
 import io
 from PyPDF2 import PdfReader
 
-
-
-
+# Set page config early
 st.set_page_config(page_title="CureBot", layout="centered")
+
+# 🔐 Handle Google Login
+if "email" not in st.session_state:
+    handle_callback()
+    login()
+    st.stop()
+
+# Sidebar - show user info & logout
+st.sidebar.write(f"👤 Logged in as: {st.session_state.get('name', '')} ({st.session_state['email']})")
+if st.sidebar.button("🚪 Logout"):
+    for key in ["email", "name"]:
+        st.session_state.pop(key, None)
+    st.rerun()
+
+# Page Title
 st.title("🩺 CureBot - AI Health Assistant")
 
+# Tabs
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Find Doctor", 
     "Ask Medical Question", 
@@ -20,14 +36,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Recommend Lab Tests"
 ])
 
-# 🧠 Ask Gemini anything
-with tab2:
-    user_q = st.text_input("Ask a medical question")
-    if user_q:
-        response = ask_llm(user_q)
-        st.write("🤖", response)
-
-# 🩺 Doctor based on symptoms
+# Tab 1: Find Doctor
 with tab1:
     symptoms = st.text_input("Describe your symptoms")
     if symptoms:
@@ -44,86 +53,76 @@ with tab1:
         else:
             st.warning("No doctors available for that specialization.")
 
-# 📜 Upload prescriptions with summary
+# Tab 2: Ask Medical Question
+with tab2:
+    user_q = st.text_input("Ask a medical question")
+    if user_q:
+        response = ask_llm(user_q)
+        st.write("🤖", response)
+
+# Tab 3: Upload Prescription
 with tab3:
     uploaded = st.file_uploader("Upload your prescription (TXT or PDF)", type=["txt", "pdf"])
+    language = st.selectbox("🌍 Select summary language", ["English", "Hindi", "Marathi", "German", "French", "Spanish"])
+
     if uploaded:
-        file_bytes = uploaded.read()
         try:
+            file_bytes = uploaded.read()
             if uploaded.type == "application/pdf":
                 reader = PdfReader(io.BytesIO(file_bytes))
                 content = "\n".join([page.extract_text() or "" for page in reader.pages])
             else:
-                content = file_bytes.decode('utf-8')
+                content = file_bytes.decode("utf-8")
 
-            # Save to database
+            # Save to DB
             session = SessionLocal()
             session.add(Prescription(filename=uploaded.name, content=content))
             session.commit()
             session.close()
 
-            st.success("📥 Prescription uploaded and saved successfully!")
-
-            # Ask Gemini to summarize
+            st.success("📥 Prescription uploaded successfully!")
+            prompt = f"Summarize this prescription in {language}:\n\n{content}"
+            summary = ask_llm(prompt)
             st.subheader("📄 Prescription Summary")
-            summary = ask_llm(f"Summarize this prescription:\n\n{content}")
             st.write("🤖", summary)
 
         except Exception as e:
-            st.error(f"Error processing file: {e}")
+            st.error(f"Error reading file: {e}")
 
-# 🧾 Check insurance
+# Tab 4: Insurance Assistant
 with tab4:
     st.subheader("📄 Upload Insurance Policy (PDF)")
     uploaded_policy = st.file_uploader("Upload your insurance policy (PDF)", type=["pdf"])
-    insurance_summary = ""
-
     if uploaded_policy:
         try:
             reader = PdfReader(io.BytesIO(uploaded_policy.read()))
             policy_text = "\n".join([page.extract_text() or "" for page in reader.pages])
             st.success("✅ Policy uploaded successfully")
-
-            # Ask Gemini to extract the benefits
-            st.subheader("🔍 Extracted Benefits Summary")
-            insurance_summary = ask_llm(
-                f"Summarize the key policy benefits and coverage details from this insurance policy:\n\n{policy_text}"
-            )
-            st.write("🤖", insurance_summary)
-
+            st.subheader("🔍 Extracted Benefits")
+            summary = ask_llm(f"Summarize policy benefits:\n\n{policy_text}")
+            st.write("🤖", summary)
         except Exception as e:
-            st.error(f"Failed to process PDF: {e}")
+            st.error(f"Failed to read PDF: {e}")
 
     st.markdown("---")
-    st.subheader("❓ Ask Insurance-Related Questions")
-
-    insurance_q = st.text_input("Ask a question like:")
-    st.caption("Examples: Do I need pre-authorization for dermatology? / Is COVID-19 hospitalization covered by Star Health?")
-    
+    st.subheader("❓ Ask Insurance Questions")
+    insurance_q = st.text_input("Your insurance question")
     if insurance_q:
         answer = ask_llm(
-            f"The user asked an insurance-related question: \"{insurance_q}\"\n"
-            f"If they mentioned a specific provider, answer accordingly. If they have no insurance, suggest relevant Indian government health schemes like Ayushman Bharat."
+            f"The user asked an insurance-related question: \"{insurance_q}\".\n"
+            "If provider is mentioned, answer accordingly. If not insured, suggest Indian government schemes like Ayushman Bharat."
         )
         st.write("🤖", answer)
 
-    st.markdown("---")
-    st.subheader("🆘 No Insurance?")
-    if st.button("Show Government Health Schemes"):
-        govt_info = ask_llm(
-            "The user has no health insurance. Suggest government schemes in India for medical coverage, including free or subsidized care."
-        )
-        st.write("🏥", govt_info)
+    if st.button("🆘 Show Govt Schemes"):
+        schemes = ask_llm("Suggest Indian government schemes for uninsured patients.")
+        st.write("🏥", schemes)
 
-# 🔬 Recommend Lab Tests
+# Tab 5: Lab Test Recommendations
 with tab5:
-    test_symptoms = st.text_input("Describe your health issue (e.g., fatigue, hair loss)")
+    test_symptoms = st.text_input("Enter your symptoms (e.g., fatigue, hair loss)")
     if test_symptoms:
-        prompt = (
-            f"A patient reports the following symptoms: \"{test_symptoms}\".\n"
-            f"Suggest a list of standard diagnostic lab tests they should consider.\n"
-            f"Reply in a bullet list format."
-        )
-        test_recommendation = ask_llm(prompt)
+        prompt = f"A patient reports: \"{test_symptoms}\".\nWhat diagnostic lab tests should they take? Respond in bullet points."
+        response = ask_llm(prompt)
         st.subheader("🧪 Recommended Lab Tests")
-        st.write("🤖", test_recommendation)
+        st.write("🤖", response)
