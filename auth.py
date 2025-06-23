@@ -9,7 +9,7 @@ load_dotenv()
 
 CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-REDIRECT_URI = "http://localhost:8501"  # Or your deployed URL
+REDIRECT_URI = "https://curebot.streamlit.app"  # Or your deployed URL
 
 def login():
     if "email" in st.session_state:
