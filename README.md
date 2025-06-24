@@ -69,7 +69,7 @@ GOOGLE_CLIENT_SECRET=your-google-oauth-client-secret
 3. **Enable OAuth Consent Screen**
 
    * Go to `OAuth consent screen` in the sidebar
-   * Choose **External** user type
+   * Choose **INTERNAL** user type
    * Fill in the app info
    * Add yourself as a **Test User**
 
