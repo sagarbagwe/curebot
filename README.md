@@ -59,7 +59,42 @@ GOOGLE_CLIENT_SECRET=your-google-oauth-client-secret
 
 ---
 
-## 🔐 Google OAuth Setup
+## 🔑 How to Get Google OAuth Client ID and Secret
+
+1. **Go to Google Cloud Console**
+   [https://console.cloud.google.com/apis/credentials](https://console.cloud.google.com/apis/credentials)
+
+2. **Create a New Project** (or select your existing project)
+
+3. **Enable OAuth Consent Screen**
+
+   * Go to `OAuth consent screen` in the sidebar
+   * Choose **External** user type
+   * Fill in the app info
+   * Add yourself as a **Test User**
+
+4. **Create OAuth 2.0 Credentials**
+
+   * Go to `Credentials` > `+ Create Credentials` > **OAuth client ID**
+   * Choose **Application type: Web application**
+   * Give a name (e.g., `CureBot Local`)
+   * Under **Authorized redirect URIs**, add:
+
+     ```
+     http://localhost:8501
+     ```
+   * Click **Create**
+
+5. **Copy the Client ID and Client Secret**
+
+   * You'll see a popup with your credentials
+   * Add them to your `.env` file like this:
+
+   ```env
+   GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=your-client-secret
+   ```
+
 
 ### 1. Create OAuth Credentials
 

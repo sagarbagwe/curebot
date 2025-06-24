@@ -3,13 +3,13 @@ from authlib.integrations.requests_client import OAuth2Session
 from urllib.parse import urlencode
 import os
 from dotenv import load_dotenv
-from models import SessionLocal, User  # 👈 Import your User model
+from models import SessionLocal, User
 
 load_dotenv()
 
 CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-REDIRECT_URI = "https://curebot.streamlit.app"  # Or your deployed URL
+REDIRECT_URI = "http://localhost:8501"  # or your deployed URL
 
 def login():
     if "email" in st.session_state:
@@ -26,9 +26,11 @@ def login():
     st.markdown(f"[🔐 Login with Google]({auth_url})")
 
 def handle_callback():
-    if "code" in st.query_params:
-        code = st.query_params["code"]
+    query_params = st.query_params
+    if "code" in query_params:
+        code = query_params["code"]
         session = OAuth2Session(CLIENT_ID, CLIENT_SECRET, redirect_uri=REDIRECT_URI)
+
         try:
             token = session.fetch_token("https://oauth2.googleapis.com/token", code=code)
             session.token = token
@@ -41,7 +43,6 @@ def handle_callback():
                 st.error("❌ Failed to get email from Google.")
                 st.stop()
 
-            # Save to DB if new user
             db = SessionLocal()
             existing = db.query(User).filter_by(email=email).first()
             if not existing:
@@ -49,9 +50,11 @@ def handle_callback():
                 db.commit()
             db.close()
 
-            # Save session
             st.session_state["email"] = email
             st.session_state["name"] = name
+
+            # ✅ Clear query parameters using new API
+            st.query_params.clear()
             st.rerun()
 
         except Exception as e:
