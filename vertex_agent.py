@@ -10,7 +10,7 @@ PROJECT_ID = os.getenv("GCP_PROJECT_ID")
 LOCATION = os.getenv("GCP_LOCATION")
 
 vertexai.init(project=PROJECT_ID, location=LOCATION)
-model = GenerativeModel("gemini-1.5-pro")
+model = GenerativeModel("gemini-2.5-pro")
 
 def ask_llm(prompt: str) -> str:
     response = model.generate_content(prompt)
